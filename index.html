@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root, [data-theme="dark"] {
+    --bg: #08080a;
+    --bg-2: #0c0c10;
+    --glass: rgba(22, 22, 28, 0.55);
+    --glass-2: rgba(30, 30, 38, 0.45);
+    --glass-3: rgba(40, 40, 50, 0.35);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-hover: rgba(255, 255, 255, 0.14);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --text: #e8e8ee;
+    --text-2: #a8a8b4;
+    --text-3: #6a6a78;
+    --text-4: #3a3a48;
+    --divider: rgba(255, 255, 255, 0.05);
+    --hover: rgba(255, 255, 255, 0.04);
+    --input-bg: rgba(0, 0, 0, 0.3);
+    --accent: #d0d0dc;
+}
+
+[data-theme="light"] {
+    --bg: #f5f5f7;
+    --bg-2: #ececef;
+    --glass: rgba(255, 255, 255, 0.7);
+    --glass-2: rgba(255, 255, 255, 0.55);
+    --glass-3: rgba(255, 255, 255, 0.4);
+    --glass-border: rgba(0, 0, 0, 0.06);
+    --glass-border-hover: rgba(0, 0, 0, 0.12);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --text: #1a1a20;
+    --text-2: #55555f;
+    --text-3: #8a8a94;
+    --text-4: #b8b8c0;
+    --divider: rgba(0, 0, 0, 0.05);
+    --hover: rgba(0, 0, 0, 0.03);
+    --input-bg: rgba(0, 0, 0, 0.03);
+    --accent: #2a2a32;
+}
+
+* { transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease; }
+
+html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -20%; left: -10%;
+    width: 60%; height: 60%;
+    background: radial-gradient(circle, var(--glass-border) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%; right: -10%;
+    width: 50%; height: 50%;
+    background: radial-gradient(circle, var(--glass-border) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: var(--glass);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 14px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+.logo {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--text);
+    text-transform: uppercase;
+}
+
+.logo span { color: var(--text-3); font-weight: 400; }
+
+.theme-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--glass-2);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.theme-btn:hover { border-color: var(--glass-border-hover); color: var(--text); }
+.theme-btn svg { width: 16px; height: 16px; }
+
+.main {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 24px 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.search-container {
+    width: 100%;
+    max-width: 720px;
+}
+
+.big-logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.big-logo .title {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    background: linear-gradient(135deg, var(--text), var(--text-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.big-logo .sub {
+    font-size: 12px;
+    color: var(--text-3);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.search-box {
+    position: relative;
+    background: var(--glass);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    padding: 6px 6px 6px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.search-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-border-hover), transparent);
+    pointer-events: none;
+    border-radius: 20px 20px 0 0;
+}
+
+.search-box:focus-within {
+    border-color: var(--glass-border-hover);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--glass-border-hover);
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-3);
+    flex-shrink: 0;
+}
+
+.search-input {
+    flex: 1;
+    padding: 18px 0;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;
+    outline: none;
+    min-width: 0;
+}
+
+.search-input::placeholder { color: var(--text-4); }
+
+.search-engine-btn {
+    padding: 10px 14px;
+    background: var(--glass-2);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-2);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.search-engine-btn:hover {
+    border-color: var(--glass-border-hover);
+    color: var(--text);
+}
+
+.search-engine-btn svg {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s;
+}
+
+.search-engine-btn.open svg { transform: rotate(180deg); }
+
+.search-go {
+    width: 48px;
+    height: 48px;
+    background: var(--text);
+    border: none;
+    border-radius: 14px;
+    color: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.search-go:hover {
+    transform: scale(1.05);
+}
+
+.search-go:active {
+    transform: scale(0.95);
+}
+
+.search-go svg {
+    width: 18px;
+    height: 18px;
+}
+
+.engine-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 220px;
+    background: var(--glass);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--glass-border-hover);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    padding: 8px;
+    z-index: 50;
+    display: none;
+    animation: dropDown 0.2s ease;
+}
+
+.engine-dropdown.active { display: block; }
+
+@keyframes dropDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.engine-option {
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: all 0.15s;
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.engine-option:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.engine-option.active {
+    background: var(--glass-2);
+    color: var(--text);
+}
+
+.engine-option .name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.engine-option .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-3);
+    flex-shrink: 0;
+}
+
+.engine-option.active .dot {
+    background: var(--text);
+}
+
+.engine-option .check {
+    color: var(--text);
+    opacity: 0;
+    font-size: 14px;
+}
+
+.engine-option.active .check { opacity: 1; }
+
+.quick-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.quick-btn {
+    padding: 10px 18px;
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-2);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quick-btn:hover {
+    border-color: var(--glass-border-hover);
+    color: var(--text);
+    transform: translateY(-2px);
+}
+
+.quick-btn svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+.shortcuts {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-4);
+    letter-spacing: 1px;
+}
+
+.shortcut {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kbd {
+    display: inline-block;
+    padding: 3px 7px;
+    background: var(--glass-2);
+    border: 1px solid var(--glass-border);
+    border-radius: 5px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 10px;
+    color: var(--text-3);
+}
+
+.history {
+    margin-top: 60px;
+    width: 100%;
+    max-width: 720px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
+.history-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text-3);
+    text-transform: uppercase;
+}
+
+.history-clear {
+    font-size: 11px;
+    color: var(--text-3);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+}
+
+.history-clear:hover { color: var(--text); }
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-item {
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.history-item:hover {
+    border-color: var(--glass-border-hover);
+    background: var(--glass-2);
+    transform: translateX(4px);
+}
+
+.history-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.history-item .query {
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-item .engine-badge {
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    background: var(--glass-2);
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.history-item .time {
+    font-size: 10px;
+    color: var(--text-4);
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.history-item .remove {
+    background: none;
+    border: none;
+    color: var(--text-4);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    flex-shrink: 0;
+}
+
+.history-item:hover .remove { opacity: 1; }
+.history-item .remove:hover { color: var(--text); background: var(--hover); }
+
+@media (max-width: 640px) {
+    .header { padding: 12px 16px; }
+    .logo { font-size: 11px; }
+    .main { padding: 90px 16px 40px; }
+    .big-logo .title { font-size: 36px; }
+    .big-logo .sub { font-size: 10px; letter-spacing: 2px; }
+    .search-box { padding: 5px 5px 5px 18px; }
+    .search-input { padding: 14px 0; font-size: 15px; }
+    .search-go { width: 42px; height: 42px; }
+    .search-engine-btn { padding: 8px 10px; font-size: 11px; }
+    .search-engine-btn .engine-name { display: none; }
+    .engine-dropdown { width: 180px; }
+    .quick-btn { padding: 8px 14px; font-size: 11px; }
+    .history { margin-top: 40px; }
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<header class="header">
+    <div class="logo">Search<span>Page</span></div>
+    <button class="theme-btn" onclick="toggleTheme()" title="Сменить тему">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+    </button>
+</header>
+
+<main class="main">
+    <div class="search-container">
+
+        <div class="big-logo">
+            <div class="title">Поиск</div>
+            <div class="sub">Введи запрос — откроется в поисковике</div>
+        </div>
+
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+            </svg>
+
+            <input type="text" class="search-input" id="search-input" placeholder="Что найти?" autocomplete="off" autofocus>
+
+            <button class="search-engine-btn" id="engine-btn" onclick="toggleEngineMenu(event)">
+                <span class="engine-name" id="engine-name">Google</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </button>
+
+            <div class="engine-dropdown" id="engine-dropdown">
+                <div class="engine-option active" data-engine="google" onclick="selectEngine('google')">
+                    <div class="name"><span class="dot"></span> Google</div>
+                    <span class="check">✓</span>
+                </div>
+                <div class="engine-option" data-engine="yandex" onclick="selectEngine('yandex')">
+                    <div class="name"><span class="dot"></span> Яндекс</div>
+                    <span class="check">✓</span>
+                </div>
+                <div class="engine-option" data-engine="duckduckgo" onclick="selectEngine('duckduckgo')">
+                    <div class="name"><span class="dot"></span> DuckDuckGo</div>
+                    <span class="check">✓</span>
+                </div>
+                <div class="engine-option" data-engine="bing" onclick="selectEngine('bing')">
+                    <div class="name"><span class="dot"></span> Bing</div>
+                    <span class="check">✓</span>
+                </div>
+                <div class="engine-option" data-engine="youtube" onclick="selectEngine('youtube')">
+                    <div class="name"><span class="dot"></span> YouTube</div>
+                    <span class="check">✓</span>
+                </div>
+            </div>
+
+            <button class="search-go" onclick="doSearch()" title="Найти (Enter)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="quick-buttons">
+            <button class="quick-btn" onclick="quickSearch('site:github.com ')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                GitHub
+            </button>
+            <button class="quick-btn" onclick="quickSearch('')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Спросить
+            </button>
+            <button class="quick-btn" onclick="quickSearch('перевод ')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14h6l2-4"/><path d="M2 5h12M7 2v3"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+                Перевод
+            </button>
+            <button class="quick-btn" onclick="quickSearch('купить ')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                Купить
+            </button>
+            <button class="quick-btn" onclick="quickSearch('погода ')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                Погода
+            </button>
+        </div>
+
+        <div class="shortcuts">
+            <div class="shortcut"><span class="kbd">Enter</span> Поиск</div>
+            <div class="shortcut"><span class="kbd">/</span> Фокус на строку</div>
+            <div class="shortcut"><span class="kbd">Esc</span> Закрыть меню</div>
+        </div>
+
+        <div class="history" id="history-section" style="display: none;">
+            <div class="history-header">
+                <div class="history-title">История поиска</div>
+                <button class="history-clear" onclick="clearHistory()">Очистить</button>
+            </div>
+            <div class="history-list" id="history-list"></div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+// ==================== БЕЗОПАСНЫЙ STORAGE ====================
+var Storage = {
+    get: function(key, fallback) {
+        try {
+            var v = localStorage.getItem(key);
+            return v !== null ? v : fallback;
+        } catch (e) { return fallback; }
+    },
+    set: function(key, value) {
+        try { localStorage.setItem(key, value); return true; }
+        catch (e) { return false; }
+    }
+};
+
+// ==================== ПЕРЕМЕННЫЕ ====================
+var currentEngine = 'google';
+var history_items = [];
+
+var ENGINES = {
+    google: {
+        name: 'Google',
+        url: 'https://www.google.com/search?q='
+    },
+    yandex: {
+        name: 'Яндекс',
+        url: 'https://yandex.ru/search/?text='
+    },
+    duckduckgo: {
+        name: 'DuckDuckGo',
+        url: 'https://duckduckgo.com/?q='
+    },
+    bing: {
+        name: 'Bing',
+        url: 'https://www.bing.com/search?q='
+    },
+    youtube: {
+        name: 'YouTube',
+        url: 'https://www.youtube.com/results?search_query='
+    }
+};
+
+// ==================== ТЕМА ====================
+function toggleTheme() {
+    var current = document.body.getAttribute('data-theme');
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    Storage.set('sp_theme', next);
+}
+
+// ==================== ПОИСК (ИСПРАВЛЕН) ====================
+function doSearch() {
+    var input = document.getElementById('search-input');
+    var query = input.value.trim();
+
+    if (!query) {
+        input.focus();
+        return;
+    }
+
+    addToHistory(query, currentEngine);
+
+    var engine = ENGINES[currentEngine];
+    if (!engine) return;
+
+    var url = engine.url + encodeURIComponent(query);
+
+    // Создаём ссылку через <a> и кликаем — работает даже там, где window.open блокируется
+    var a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+
+    // Убираем через секунду
+    setTimeout(function() {
+        if (a.parentNode) a.parentNode.removeChild(a);
+    }, 1000);
+
+    // Показываем ссылку на случай если браузер всё равно заблокировал
+    setTimeout(function() {
+        showFallbackLink(url, engine.name);
+    }, 800);
+}
+
+function showFallbackLink(url, engineName) {
+    var old = document.getElementById('fallback-link');
+    if (old) old.parentNode.removeChild(old);
+
+    var box = document.createElement('div');
+    box.id = 'fallback-link';
+    box.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(22,22,28,0.95);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:16px 22px;box-shadow:0 10px 40px rgba(0,0,0,0.5);z-index:1000;text-align:center;max-width:90vw;font-family:inherit;';
+
+    box.innerHTML =
+        '<div style="font-size:12px;color:#a8a8b4;margin-bottom:10px;letter-spacing:1px;">Если не открылось — нажми:</div>' +
+        '<a href="' + url + '" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:10px 20px;background:#e8e8ee;color:#08080a;text-decoration:none;border-radius:10px;font-size:13px;font-weight:600;">Открыть в ' + engineName + '</a>' +
+        '<button onclick="this.parentElement.remove()" style="margin-left:10px;padding:10px 16px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;color:#a8a8b4;cursor:pointer;font-family:inherit;font-size:12px;">Закрыть</button>';
+
+    document.body.appendChild(box);
+
+    setTimeout(function() {
+        if (box.parentNode) box.parentNode.removeChild(box);
+    }, 10000);
+}
+
+function quickSearch(prefix) {
+    var input = document.getElementById('search-input');
+    input.value = prefix;
+    input.focus();
+}
+
+// ==================== ВЫБОР ПОИСКОВИКА ====================
+function toggleEngineMenu(e) {
+    if (e) e.stopPropagation();
+    var dropdown = document.getElementById('engine-dropdown');
+    var btn = document.getElementById('engine-btn');
+    dropdown.classList.toggle('active');
+    btn.classList.toggle('open');
+}
+
+function selectEngine(engineKey) {
+    currentEngine = engineKey;
+    Storage.set('sp_engine', engineKey);
+
+    document.getElementById('engine-name').textContent = ENGINES[engineKey].name;
+
+    var options = document.querySelectorAll('.engine-option');
+    for (var i = 0; i < options.length; i++) {
+        options[i].classList.remove('active');
+        if (options[i].getAttribute('data-engine') === engineKey) {
+            options[i].classList.add('active');
+        }
+    }
+
+    document.getElementById('engine-dropdown').classList.remove('active');
+    document.getElementById('engine-btn').classList.remove('open');
+}
+
+// ==================== ИСТОРИЯ ====================
+function loadHistory() {
+    try {
+        var raw = Storage.get('sp_history', '[]');
+        var parsed = JSON.parse(raw);
+        history_items = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        history_items = [];
+    }
+}
+
+function saveHistory() {
+    Storage.set('sp_history', JSON.stringify(history_items));
+}
+
+function addToHistory(query, engine) {
+    history_items = history_items.filter(function(item) {
+        return !(item.query === query && item.engine === engine);
+    });
+
+    history_items.unshift({
+        query: query,
+        engine: engine,
+        time: Date.now()
+    });
+
+    if (history_items.length > 20) {
+        history_items = history_items.slice(0, 20);
+    }
+
+    saveHistory();
+    renderHistory();
+}
+
+function renderHistory() {
+    var section = document.getElementById('history-section');
+    var list = document.getElementById('history-list');
+
+    if (history_items.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+
+    var html = '';
+    for (var i = 0; i < history_items.length; i++) {
+        var item = history_items[i];
+        var engineName = ENGINES[item.engine] ? ENGINES[item.engine].name : 'Google';
+
+        var d = new Date(item.time);
+        var now = new Date();
+        var diffMin = Math.floor((now - d) / 60000);
+        var timeStr;
+        if (diffMin < 1) timeStr = 'сейчас';
+        else if (diffMin < 60) timeStr = diffMin + 'м';
+        else if (diffMin < 1440) timeStr = Math.floor(diffMin / 60) + 'ч';
+        else timeStr = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+
+        html += '<div class="history-item" onclick="repeatSearch(' + i + ')">' +
+            '<div class="history-item-content">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-3); flex-shrink: 0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>' +
+                '<span class="query">' + escapeHtml(item.query) + '</span>' +
+            '</div>' +
+            '<span class="engine-badge">' + engineName + '</span>' +
+            '<span class="time">' + timeStr + '</span>' +
+            '<button class="remove" onclick="removeHistory(event, ' + i + ')" title="Удалить">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+            '</button>' +
+        '</div>';
+    }
+
+    list.innerHTML = html;
+}
+
+function repeatSearch(index) {
+    var item = history_items[index];
+    if (!item) return;
+
+    document.getElementById('search-input').value = item.query;
+    currentEngine = item.engine;
+    selectEngine(item.engine);
+    doSearch();
+}
+
+function removeHistory(e, index) {
+    e.stopPropagation();
+    history_items.splice(index, 1);
+    saveHistory();
+    renderHistory();
+}
+
+function clearHistory() {
+    if (!confirm('Очистить всю историю?')) return;
+    history_items = [];
+    saveHistory();
+    renderHistory();
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+    });
+}
+
+// ==================== INIT ====================
+function init() {
+    var savedTheme = Storage.get('sp_theme', 'dark');
+    document.body.setAttribute('data-theme', savedTheme);
+
+    var savedEngine = Storage.get('sp_engine', 'google');
+    if (ENGINES[savedEngine]) {
+        selectEngine(savedEngine);
+    } else {
+        selectEngine('google');
+    }
+
+    loadHistory();
+    renderHistory();
+
+    var input = document.getElementById('search-input');
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doSearch();
+            }
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        var dropdown = document.getElementById('engine-dropdown');
+        var btn = document.getElementById('engine-btn');
+        if (dropdown && dropdown.classList.contains('active')) {
+            if (!dropdown.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                dropdown.classList.remove('active');
+                btn.classList.remove('open');
+            }
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        var input = document.getElementById('search-input');
+        if (e.key === '/' && document.activeElement !== input) {
+            e.preventDefault();
+            input.focus();
+            input.select();
+        }
+        if (e.key === 'Escape') {
+            var dropdown = document.getElementById('engine-dropdown');
+            if (dropdown && dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+                document.getElementById('engine-btn').classList.remove('open');
+            } else if (document.activeElement === input) {
+                input.value = '';
+                input.blur();
+            }
+        }
+    });
+
+    console.log('SearchPage готов');
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
+</body>
+</html>
